@@ -1,5 +1,6 @@
 package net.dfranek.library.rest.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import net.dfranek.library.rest.entity.DatabaseFile;
 
@@ -11,8 +12,8 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-
-public class FileObject {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class FileObject implements DtoInterface<DatabaseFile> {
 
     private static final Map<String, String> endings = new HashMap<>();
     static {

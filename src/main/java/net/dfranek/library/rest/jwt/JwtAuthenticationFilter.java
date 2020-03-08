@@ -4,10 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import net.dfranek.library.rest.config.JwtConfig;
 import net.dfranek.library.rest.dto.login.Login;
 import net.dfranek.library.rest.dto.login.Token;
-import net.dfranek.library.rest.utils.SecurityConstants;
+import net.dfranek.library.rest.utils.SecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,13 +31,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final AuthenticationManager authenticationManager;
     private Login loginInformation;
 
-    private final JwtConfig jwtConfig;
+    private final SecurityHelper securityHelper;
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, JwtConfig jwtConfig) {
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, SecurityHelper securityHelper) {
         this.authenticationManager = authenticationManager;
-        this.jwtConfig = jwtConfig;
+        this.securityHelper = securityHelper;
 
-        setFilterProcessesUrl(SecurityConstants.AUTH_LOGIN_URL);
+        setFilterProcessesUrl(SecurityHelper.AUTH_LOGIN_URL);
     }
 
     @Override
@@ -84,19 +83,19 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        byte[] signingKey = jwtConfig.getSecret().getBytes();
+        byte[] signingKey = securityHelper.getSecret().getBytes();
 
         String token = Jwts.builder()
                 .signWith(Keys.hmacShaKeyFor(signingKey), SignatureAlgorithm.HS512)
-                .setHeaderParam("typ", SecurityConstants.TOKEN_TYPE)
-                .setIssuer(SecurityConstants.TOKEN_ISSUER)
-                .setAudience(SecurityConstants.TOKEN_AUDIENCE)
+                .setHeaderParam("typ", SecurityHelper.TOKEN_TYPE)
+                .setIssuer(SecurityHelper.TOKEN_ISSUER)
+                .setAudience(SecurityHelper.TOKEN_AUDIENCE)
                 .setSubject(user.getUsername())
                 .setExpiration(new Date(System.currentTimeMillis() + 864000000))
                 .claim("rol", roles)
                 .compact();
 
-        response.addHeader(SecurityConstants.TOKEN_HEADER, SecurityConstants.TOKEN_PREFIX + token);
+        response.addHeader(SecurityHelper.TOKEN_HEADER, SecurityHelper.TOKEN_PREFIX + token);
         response.setContentType("application/json; charset=utf-8");
 
         Token loginToken = new Token();

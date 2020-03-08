@@ -1,9 +1,11 @@
 package net.dfranek.library.rest.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import net.dfranek.library.rest.entity.User;
 
-public class UserDto {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class UserDto implements DtoInterface<User> {
 
     private Integer id;
 
@@ -80,5 +82,4 @@ public class UserDto {
 
         return user;
     }
-
 }

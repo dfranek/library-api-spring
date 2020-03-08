@@ -1,12 +1,14 @@
 package net.dfranek.library.rest.entity;
 
+import net.dfranek.library.rest.dto.FileObject;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity(name = "file")
-public class DatabaseFile {
+public class DatabaseFile implements EntityInterface<FileObject> {
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
@@ -68,5 +70,14 @@ public class DatabaseFile {
 
     public void setPublicPath(String publicPath) {
         this.publicPath = publicPath;
+    }
+
+
+    @Override
+    public FileObject toDto() {
+        FileObject file = new FileObject();
+        file.setPath(getPublicPath());
+
+        return file;
     }
 }

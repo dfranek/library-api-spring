@@ -1,9 +1,9 @@
 package net.dfranek.library.rest;
 
-import net.dfranek.library.rest.config.JwtConfig;
 import net.dfranek.library.rest.jwt.JwtAuthenticationFilter;
 import net.dfranek.library.rest.jwt.JwtAuthorizationFilter;
 import net.dfranek.library.rest.service.MyUserDetailsService;
+import net.dfranek.library.rest.utils.SecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
@@ -24,7 +24,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private JwtConfig jwtConfig;
+    private SecurityHelper securityHelper;
 
     @Autowired
     private MyUserDetailsService userDetailsService;
@@ -37,8 +37,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.POST, "/user").permitAll()
             .anyRequest().authenticated()
             .and()
-            .addFilter(new JwtAuthenticationFilter(authenticationManager(), jwtConfig))
-            .addFilter(new JwtAuthorizationFilter(authenticationManager(), jwtConfig))
+            .addFilter(new JwtAuthenticationFilter(authenticationManager(), securityHelper))
+            .addFilter(new JwtAuthorizationFilter(authenticationManager(), securityHelper))
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }

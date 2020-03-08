@@ -2,8 +2,7 @@ package net.dfranek.library.rest.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.SignatureException;
-import net.dfranek.library.rest.config.JwtConfig;
-import net.dfranek.library.rest.utils.SecurityConstants;
+import net.dfranek.library.rest.utils.SecurityHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,11 +24,11 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JwtAuthorizationFilter.class);
 
-    private final JwtConfig jwtConfig;
+    private final SecurityHelper securityHelper;
 
-    public JwtAuthorizationFilter(AuthenticationManager authenticationManager, JwtConfig jwtConfig) {
+    public JwtAuthorizationFilter(AuthenticationManager authenticationManager, SecurityHelper securityHelper) {
         super(authenticationManager);
-        this.jwtConfig = jwtConfig;
+        this.securityHelper = securityHelper;
     }
 
     @Override
@@ -46,10 +45,10 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
     }
 
     private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
-        String token = request.getHeader(SecurityConstants.TOKEN_HEADER);
-        if (StringUtils.isNotEmpty(token) && token.startsWith(SecurityConstants.TOKEN_PREFIX)) {
+        String token = request.getHeader(SecurityHelper.TOKEN_HEADER);
+        if (StringUtils.isNotEmpty(token) && token.startsWith(SecurityHelper.TOKEN_PREFIX)) {
             try {
-                byte[] signingKey = jwtConfig.getSecret().getBytes();
+                byte[] signingKey = securityHelper.getSecret().getBytes();
 
                 Jws<Claims> parsedToken = Jwts.parser()
                         .setSigningKey(signingKey)
@@ -64,7 +63,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
                         .map(authority -> new SimpleGrantedAuthority((String) authority))
                         .collect(Collectors.toList());
 
-                if (StringUtils.isNotEmpty(username)) {
+                if (StringUtils.isNotEmpty(username) && securityHelper.isUserExisting(username)) {
                     return new UsernamePasswordAuthenticationToken(username, null, authorities);
                 }
             } catch (ExpiredJwtException exception) {
