@@ -3,8 +3,9 @@ package net.dfranek.library.rest.entity;
 import net.dfranek.library.rest.dto.UserDto;
 
 import javax.persistence.*;
+import java.util.Set;
 
-@Entity // This tells Hibernate to make a table out of this class
+@Entity
 public class User implements EntityInterface<UserDto> {
   @Id
   @GeneratedValue(strategy=GenerationType.AUTO)
@@ -26,6 +27,12 @@ public class User implements EntityInterface<UserDto> {
   )
   @JoinColumn(name = "avatar_id")
   private DatabaseFile avatar;
+
+  @ManyToMany(mappedBy = "users")
+  private Set<Library> libraries;
+
+  @OneToMany(mappedBy = "user", orphanRemoval = true)
+  private Set<State> states;
 
   public Integer getId() {
     return id;
@@ -77,6 +84,22 @@ public class User implements EntityInterface<UserDto> {
 
   public void setAvatar(DatabaseFile avatar) {
     this.avatar = avatar;
+  }
+
+  public Set<Library> getLibraries() {
+    return libraries;
+  }
+
+  public void setLibraries(Set<Library> libraries) {
+    this.libraries = libraries;
+  }
+
+  public Set<State> getStates() {
+    return states;
+  }
+
+  public void setStates(Set<State> states) {
+    this.states = states;
   }
 
   @Override

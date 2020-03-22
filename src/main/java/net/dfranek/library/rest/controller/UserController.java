@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.Optional;
 
-@Controller // This means that this class is a Controller
+@Controller
 @RequestMapping(path = "/user")
 public class UserController {
 

@@ -1,5 +1,8 @@
 package net.dfranek.library.rest.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class InformationalResponse {
 
     private int code;
