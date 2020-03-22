@@ -33,7 +33,6 @@ public class LibraryController {
     @Autowired
     private UserRepository userRepository;
 
-
     @Autowired
     private LibraryRepository libraryRepository;
 
@@ -83,8 +82,7 @@ public class LibraryController {
                 library.setName(updatedLibrary.getName());
                 library.setDateModified(ZonedDateTime.now());
                 libraryRepository.save(library);
-                updatedLibrary.setId(libraryId);
-                return new ResponseEntity<>(updatedLibrary, HttpStatus.OK);
+                return new ResponseEntity<>(library.toDto(), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(new InformationalResponse(HttpStatus.UNAUTHORIZED.value(), "Library does not belong to user!"), HttpStatus.UNAUTHORIZED);
             }

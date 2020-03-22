@@ -2,7 +2,7 @@ package net.dfranek.library.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import net.dfranek.library.rest.entity.ShelfEntry;
-import net.dfranek.library.rest.jwt.ShelfRepository;
+import net.dfranek.library.rest.repository.ShelfRepository;
 import net.dfranek.library.rest.utils.SpringContext;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
