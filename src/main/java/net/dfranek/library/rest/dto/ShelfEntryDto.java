@@ -6,11 +6,15 @@ import net.dfranek.library.rest.repository.ShelfRepository;
 import net.dfranek.library.rest.utils.SpringContext;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ShelfEntryDto implements DtoInterface<ShelfEntry> {
+public class ShelfEntryDto implements DtoInterface<ShelfEntry>, ShelfInterface {
+
+    private Integer id;
+
+    private String name;
+
+    private int numItems;
 
     private String row;
-    private ShelfDto shelf;
-
 
     public String getRow() {
         return row;
@@ -20,24 +24,34 @@ public class ShelfEntryDto implements DtoInterface<ShelfEntry> {
         this.row = row;
     }
 
-    public ShelfDto getShelf() {
-        return shelf;
-    }
-
-    public void setShelf(ShelfDto shelf) {
-        this.shelf = shelf;
-    }
-
+    @Override
     public Integer getId() {
-        return shelf.getId();
+        return id;
     }
 
+    @Override
     public String getName() {
-        return shelf.getName();
+        return name;
     }
 
+    @Override
     public int getNumItems() {
-        return shelf.getNumItems();
+        return numItems;
+    }
+
+    @Override
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void setNumItems(int numItems) {
+        this.numItems = numItems;
     }
 
     @Override
@@ -45,7 +59,7 @@ public class ShelfEntryDto implements DtoInterface<ShelfEntry> {
         ShelfEntry entry = new ShelfEntry();
         entry.setRow(row);
         ShelfRepository shelfRepository = SpringContext.getBean(ShelfRepository.class);
-        entry.setShelf(shelfRepository.findById(shelf.getId()).orElse(null));
+        entry.setShelf(shelfRepository.findById(id).orElse(null));
 
         return entry;
     }

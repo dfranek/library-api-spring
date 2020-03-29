@@ -5,9 +5,10 @@ import net.dfranek.library.rest.entity.Book;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class DetailBook extends BasicBook {
+public class DetailBook extends BasicBook implements BookWithLocation {
 
     private String description;
     private String isbn13;
@@ -65,8 +66,14 @@ public class DetailBook extends BasicBook {
         this.shelves = shelves;
     }
 
+    @Override
     public List<LibraryDto> getLibraries() {
         return libraries;
+    }
+
+    @Override
+    public List<ShelfInterface> getSimpleShelves() {
+        return shelves.stream().map(shelf -> (ShelfInterface) shelf).collect(Collectors.toList());
     }
 
     public void setLibraries(List<LibraryDto> libraries) {

@@ -3,9 +3,10 @@ package net.dfranek.library.rest.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class NewBook {
+public class NewBook implements BookWithLocation {
 
     private String isbn13;
     private String isbn10;
@@ -48,6 +49,7 @@ public class NewBook {
         this.title = title;
     }
 
+    @Override
     public List<LibraryDto> getLibraries() {
         return libraries;
     }
@@ -62,6 +64,11 @@ public class NewBook {
 
     public void setShelves(List<ShelfDto> shelves) {
         this.shelves = shelves;
+    }
+
+    @Override
+    public List<ShelfInterface> getSimpleShelves() {
+        return shelves.stream().map(shelf -> (ShelfInterface) shelf).collect(Collectors.toList());
     }
 
     public List<String> getTags() {
