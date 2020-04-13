@@ -10,6 +10,7 @@ import net.dfranek.library.rest.utils.SpringContext;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,8 +22,8 @@ public class BasicBook implements DtoInterface<Book> {
     private String title;
     private String tagline;
     private FileObject image;
-    private List<String> authors;
-    private List<String> tags;
+    private List<String> authors = new ArrayList<>();
+    private List<String> tags = new ArrayList<>();
     private int pages;
     private ZonedDateTime datePublished;
     private List<StateDto> states;

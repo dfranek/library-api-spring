@@ -14,7 +14,7 @@ public class NewBook implements BookWithLocation {
     private String title;
 
     private List<LibraryDto> libraries;
-    private List<ShelfDto> shelves;
+    private List<ShelfEntryDto> shelves;
     private List<String> tags;
 
     public String getIsbn13() {
@@ -58,11 +58,11 @@ public class NewBook implements BookWithLocation {
         this.libraries = libraries;
     }
 
-    public List<ShelfDto> getShelves() {
+    public List<ShelfEntryDto> getShelves() {
         return shelves;
     }
 
-    public void setShelves(List<ShelfDto> shelves) {
+    public void setShelves(List<ShelfEntryDto> shelves) {
         this.shelves = shelves;
     }
 

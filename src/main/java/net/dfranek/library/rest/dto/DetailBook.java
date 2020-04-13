@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import net.dfranek.library.rest.entity.Book;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,8 +16,8 @@ public class DetailBook extends BasicBook implements BookWithLocation {
     private String isbn10;
     private String publisher;
     private String placeOfPublication;
-    private List<ShelfEntryDto> shelves;
-    private List<LibraryDto> libraries;
+    private List<ShelfEntryDto> shelves = new ArrayList<>();
+    private List<LibraryDto> libraries = new ArrayList<>();
 
     public String getDescription() {
         return description;
