@@ -9,4 +9,6 @@ public interface BookRepositoryAdditional {
 
     List<Book> searchForBook(String query, User user, List<String> fieldsToUse);
 
+    Book findByTitleAndAuthorsIn(String title, List<String> authors);
+
 }

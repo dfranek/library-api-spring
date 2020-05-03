@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FileObject implements DtoInterface<DatabaseFile> {
@@ -107,4 +108,21 @@ public class FileObject implements DtoInterface<DatabaseFile> {
         return file;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FileObject that = (FileObject) o;
+        return Objects.equals(contents, that.contents) &&
+                Objects.equals(mimeType, that.mimeType) &&
+                Objects.equals(fileName, that.fileName) &&
+                Objects.equals(fileSize, that.fileSize) &&
+                Objects.equals(path, that.path) &&
+                Objects.equals(storagePath, that.storagePath);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(contents, mimeType, fileName, fileSize, path, storagePath);
+    }
 }

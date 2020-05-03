@@ -30,6 +30,7 @@ public class BookService {
                     book.getLibraries().addAll(newBook.getLibraries());
                     book.getShelves().addAll(newBook.getShelves());
                     book.getTags().addAll(newBook.getTags());
+                    book.getStates().addAll(newBook.getStates());
                 });
             }
 

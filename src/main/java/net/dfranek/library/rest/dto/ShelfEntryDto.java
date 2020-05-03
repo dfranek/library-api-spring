@@ -5,6 +5,8 @@ import net.dfranek.library.rest.entity.ShelfEntry;
 import net.dfranek.library.rest.repository.ShelfRepository;
 import net.dfranek.library.rest.utils.SpringContext;
 
+import java.util.Objects;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ShelfEntryDto implements DtoInterface<ShelfEntry>, ShelfInterface {
 
@@ -62,5 +64,21 @@ public class ShelfEntryDto implements DtoInterface<ShelfEntry>, ShelfInterface {
         entry.setShelf(shelfRepository.findById(id).orElse(null));
 
         return entry;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ShelfEntryDto that = (ShelfEntryDto) o;
+        return numItems == that.numItems &&
+                Objects.equals(id, that.id) &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(row, that.row);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, numItems, row);
     }
 }

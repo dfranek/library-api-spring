@@ -5,4 +5,8 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface BookRepository extends CrudRepository<Book, Integer>, BookRepositoryAdditional {
 
+    Book findByIsbn10(String isbn10);
+
+    Book findByIsbn13(String isbn13);
+
 }

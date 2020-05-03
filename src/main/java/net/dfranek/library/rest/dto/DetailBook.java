@@ -1,11 +1,13 @@
 package net.dfranek.library.rest.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import net.dfranek.library.rest.entity.Book;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -73,6 +75,7 @@ public class DetailBook extends BasicBook implements BookWithLocation {
     }
 
     @Override
+    @JsonIgnore
     public List<ShelfInterface> getSimpleShelves() {
         return shelves.stream().map(shelf -> (ShelfInterface) shelf).collect(Collectors.toList());
     }
@@ -89,7 +92,11 @@ public class DetailBook extends BasicBook implements BookWithLocation {
         }
 
         if(StringUtils.isNotBlank(isbn10)) {
-            book.setDescription(isbn13);
+            book.setIsbn10(isbn10);
+        }
+
+        if(StringUtils.isNotBlank(isbn13)) {
+            book.setIsbn13(isbn13);
         }
 
         if(StringUtils.isNotBlank(publisher)) {
@@ -100,6 +107,30 @@ public class DetailBook extends BasicBook implements BookWithLocation {
             book.setPublisher(placeOfPublication);
         }
 
+        if(!shelves.isEmpty()) {
+            book.setShelfEntries(shelves.stream().map(ShelfEntryDto::toEntity).collect(Collectors.toSet()));
+        }
+
         return book;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        DetailBook that = (DetailBook) o;
+        return Objects.equals(description, that.description) &&
+                Objects.equals(isbn13, that.isbn13) &&
+                Objects.equals(isbn10, that.isbn10) &&
+                Objects.equals(publisher, that.publisher) &&
+                Objects.equals(placeOfPublication, that.placeOfPublication) &&
+                Objects.equals(shelves, that.shelves) &&
+                Objects.equals(libraries, that.libraries);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), description, isbn13, isbn10, publisher, placeOfPublication, shelves, libraries);
     }
 }

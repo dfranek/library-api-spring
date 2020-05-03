@@ -43,13 +43,13 @@ public class UserController {
         if(existingUser == null) {
 
             Optional.ofNullable(userToCreate.getAvatar())
-                    .ifPresent(fileObject -> {
-                        try {
-                            fileObject.save(fileConfig.getAvatarStoragePath());
-                        } catch (IOException e) {
-                            LOG.warn("error writing file", e);
-                        }
-                    });
+                .ifPresent(fileObject -> {
+                    try {
+                        fileObject.save(fileConfig.getAvatarStoragePath());
+                    } catch (IOException e) {
+                        LOG.warn("error writing file", e);
+                    }
+                });
 
             User user = userToCreate.toEntity();
             user.setPassword(passwordEncoder.encode(user.getPassword()));

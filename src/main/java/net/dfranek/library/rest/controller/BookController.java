@@ -1,30 +1,32 @@
 package net.dfranek.library.rest.controller;
 
-import net.dfranek.library.rest.dto.BookWithLocation;
-import net.dfranek.library.rest.dto.DetailBook;
-import net.dfranek.library.rest.dto.InformationalResponse;
-import net.dfranek.library.rest.dto.NewBook;
-import net.dfranek.library.rest.entity.Library;
-import net.dfranek.library.rest.entity.Shelf;
-import net.dfranek.library.rest.entity.User;
-import net.dfranek.library.rest.repository.BookRepository;
-import net.dfranek.library.rest.repository.UserRepository;
+import net.dfranek.library.rest.config.FileConfig;
+import net.dfranek.library.rest.dto.*;
+import net.dfranek.library.rest.entity.*;
+import net.dfranek.library.rest.repository.*;
 import net.dfranek.library.rest.service.BookService;
 import net.dfranek.library.rest.utils.SecurityHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping(path = "/book")
 public class BookController {
+
+    private static final Logger LOG = LoggerFactory.getLogger(BookController.class);
 
     @Autowired
     private SecurityHelper securityHelper;
@@ -33,10 +35,22 @@ public class BookController {
     private BookRepository bookRepository;
 
     @Autowired
+    private FileConfig fileConfig;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private BookService bookService;
+
+    @Autowired
+    private TagRepository tagRepository;
+
+    @Autowired
+    private ShelfEntryRepository shelfEntryRepository;
+
+    @Autowired
+    private StateRepository stateRepository;
 
     @PostMapping(params = "type=AUTOMATIC")
     public @ResponseBody
@@ -56,7 +70,7 @@ public class BookController {
             return new ResponseEntity<>(possibleBooks, HttpStatus.MULTIPLE_CHOICES);
         }
 
-        final DetailBook savedBook = saveBook(possibleBooks.get(0));
+        final DetailBook savedBook = saveBook(possibleBooks.get(0), user);
 
         return new ResponseEntity<>(savedBook, HttpStatus.CREATED);
     }
@@ -89,8 +103,63 @@ public class BookController {
         return null;
     }
 
-    private DetailBook saveBook(DetailBook bookToCreate) {
-        return bookToCreate;
+    private DetailBook saveBook(final DetailBook bookToCreate, final User user) {
+        Optional.ofNullable(bookToCreate.getImage())
+            .ifPresent(fileObject -> {
+                try {
+                    fileObject.save(fileConfig.getBookStoragePath());
+                } catch (IOException e) {
+                    LOG.warn("error writing file", e);
+                }
+            });
+
+        Book book = checkIfBookExists(bookToCreate);
+        if(book == null) {
+            book = bookToCreate.toEntity();
+            book.setDateAdded(ZonedDateTime.now());
+        } else {
+            book.updateFromDto(bookToCreate);
+        }
+
+        book.getTags()
+                .stream()
+                .filter(tag -> tag.getId() == null)
+                .forEach(tag -> tagRepository.save(tag));
+
+        Book finalBook = book;
+        book.getStates()
+                .stream()
+                .filter(state -> state.getId() == null)
+                .forEach(state -> {
+                    state.setUser(user);
+                    state.setBook(finalBook);
+                    stateRepository.save(state);
+                });
+
+        bookRepository.save(book);
+
+        bookToCreate.getShelves()
+                .stream()
+                .map(ShelfEntryDto::toEntity)
+                .forEach(shelfEntry -> {
+                    shelfEntry.setBook(finalBook);
+                    shelfEntryRepository.save(shelfEntry);
+                    finalBook.getShelfEntries().add(shelfEntry);
+                });
+
+        return book.toDto();
+    }
+
+    private Book checkIfBookExists(final DetailBook bookToCreate) {
+        return Optional.ofNullable(bookRepository.findByIsbn13(bookToCreate.getIsbn13()))
+            .orElse(Optional.ofNullable(bookRepository.findByIsbn10(bookToCreate.getIsbn10()))
+                .orElse(Optional.ofNullable(bookRepository.findByTitleAndAuthorsIn(
+                        bookToCreate.getTitle(),
+                        bookToCreate.getAuthors()
+                    ))
+                    .orElse(null)
+                )
+            );
     }
 
 
@@ -103,7 +172,7 @@ public class BookController {
             return error;
         }
 
-        final DetailBook savedBook = saveBook(bookToCreate);
+        final DetailBook savedBook = saveBook(bookToCreate, user);
 
         return new ResponseEntity<>(savedBook, HttpStatus.CREATED);
     }

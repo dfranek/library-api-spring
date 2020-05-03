@@ -1,9 +1,12 @@
 package net.dfranek.library.rest.entity;
 
 import net.dfranek.library.rest.dto.DetailBook;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
@@ -26,7 +29,7 @@ public class Book implements EntityInterface<DetailBook> {
 
     private String publisher;
 
-    private ZonedDateTime datePublished;
+    private LocalDate datePublished;
 
     private String placeOfPublication;
 
@@ -34,7 +37,7 @@ public class Book implements EntityInterface<DetailBook> {
 
     private String tagline;
 
-    @OneToMany(mappedBy = "book", orphanRemoval = true, cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE)
     private Set<State> states;
 
     @ManyToMany(cascade = CascadeType.PERSIST)
@@ -60,6 +63,8 @@ public class Book implements EntityInterface<DetailBook> {
     private DatabaseFile image;
 
     private ZonedDateTime dateAdded;
+
+    private ZonedDateTime dateModified;
 
     public Integer getId() {
         return id;
@@ -109,11 +114,11 @@ public class Book implements EntityInterface<DetailBook> {
         this.publisher = publisher;
     }
 
-    public ZonedDateTime getDatePublished() {
+    public LocalDate getDatePublished() {
         return datePublished;
     }
 
-    public void setDatePublished(ZonedDateTime datePublished) {
+    public void setDatePublished(LocalDate datePublished) {
         this.datePublished = datePublished;
     }
 
@@ -189,6 +194,14 @@ public class Book implements EntityInterface<DetailBook> {
         this.dateAdded = dateAdded;
     }
 
+    public ZonedDateTime getDateModified() {
+        return dateModified;
+    }
+
+    public void setDateModified(ZonedDateTime dateModified) {
+        this.dateModified = dateModified;
+    }
+
     @Override
     public DetailBook toDto() {
         DetailBook detailBook = new DetailBook();
@@ -217,7 +230,81 @@ public class Book implements EntityInterface<DetailBook> {
                 .map(Tag::getName)
                 .collect(Collectors.toList())
         );
+        detailBook.setShelves(getShelfEntries()
+                .stream()
+                .map(ShelfEntry::toEntryDto)
+        .collect(Collectors.toList()));
+
+        detailBook.setLibraries(new ArrayList<>(getShelfEntries()
+                .stream()
+                .map(ShelfEntry::getShelf)
+                .map(Shelf::getLibrary)
+                .map(Library::toDto)
+                .collect(Collectors.toSet()))
+        );
+        detailBook.setStates(getStates()
+                .stream()
+                .map(State::toDto)
+                .collect(Collectors.toList())
+        );
 
         return detailBook;
+    }
+
+    public void updateFromDto(DetailBook bookDto) {
+        final Set<Library> libraries = getShelfEntries()
+                .stream()
+                .map(ShelfEntry::getShelf)
+                .map(Shelf::getLibrary)
+                .collect(Collectors.toSet());
+
+        setDateModified(ZonedDateTime.now());
+        final Book tempEntity = bookDto.toEntity();
+
+        if(StringUtils.isNotBlank(tempEntity.getTitle())) {
+            setTitle(tempEntity.getTitle());
+        }
+        if(StringUtils.isNotBlank(tempEntity.getTagline())) {
+            setTagline(tempEntity.getTagline());
+        }
+        if(tempEntity.getPages() > 0) {
+            setPages(tempEntity.getPages());
+        }
+        if(tempEntity.getDatePublished() != null) {
+            setDatePublished(tempEntity.getDatePublished());
+        }
+        if(StringUtils.isNotBlank(tempEntity.getDescription())) {
+            setDescription(tempEntity.getDescription());
+        }
+        if(StringUtils.isNotBlank(tempEntity.getIsbn13())) {
+            setIsbn13(tempEntity.getIsbn13());
+        }
+        if(StringUtils.isNotBlank(tempEntity.getIsbn10())) {
+            setIsbn10(tempEntity.getIsbn10());
+        }
+        if(StringUtils.isNotBlank(tempEntity.getPublisher())) {
+            setPublisher(tempEntity.getPublisher());
+        }
+        if(StringUtils.isNotBlank(tempEntity.getPlaceOfPublication())) {
+            setPlaceOfPublication(tempEntity.getPlaceOfPublication());
+        }
+
+        if(tempEntity.getImage() != null) {
+            setImage(tempEntity.getImage());
+        }
+
+        if(tempEntity.getAuthors() != null) {
+            getAuthors().addAll(tempEntity.getAuthors());
+        }
+
+        if(tempEntity.getStates() != null) {
+            setStates(tempEntity.getStates());
+        }
+
+        if(tempEntity.getTags() != null) {
+            getTags().addAll(tempEntity.getTags());
+            getTags().forEach(tag -> tag.getLibraries().addAll(libraries));
+        }
+
     }
 }

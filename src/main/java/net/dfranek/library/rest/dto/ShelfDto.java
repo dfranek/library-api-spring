@@ -3,6 +3,8 @@ package net.dfranek.library.rest.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import net.dfranek.library.rest.entity.Shelf;
 
+import java.util.Objects;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ShelfDto implements DtoInterface<Shelf>, ShelfInterface {
     private Integer id;
@@ -48,5 +50,20 @@ public class ShelfDto implements DtoInterface<Shelf>, ShelfInterface {
         shelf.setName(name);
 
         return shelf;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ShelfDto shelfDto = (ShelfDto) o;
+        return numItems == shelfDto.numItems &&
+                Objects.equals(id, shelfDto.id) &&
+                Objects.equals(name, shelfDto.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, numItems);
     }
 }

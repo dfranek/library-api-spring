@@ -3,6 +3,7 @@ package net.dfranek.library.rest.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;
+import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ShelfWithBooks {
@@ -24,5 +25,19 @@ public class ShelfWithBooks {
 
     public void setBooks(List<ShelfBook> books) {
         this.books = books;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ShelfWithBooks that = (ShelfWithBooks) o;
+        return Objects.equals(shelf, that.shelf) &&
+                Objects.equals(books, that.books);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(shelf, books);
     }
 }

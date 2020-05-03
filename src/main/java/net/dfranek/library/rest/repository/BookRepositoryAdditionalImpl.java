@@ -63,4 +63,24 @@ public class BookRepositoryAdditionalImpl implements BookRepositoryAdditional {
         return entityManager.createQuery(query)
                 .getResultList();
     }
+
+    @Override
+    public Book findByTitleAndAuthorsIn(String title, List<String> authorsToSearch) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Book> query = cb.createQuery(Book.class);
+        Root<Book> book = query.from(Book.class);
+        Join<Object, Author> authors = book.join("authors");
+
+        final CriteriaBuilder.In<Object> authorIn = cb.in(authors.get("name"));
+        for (String author : authorsToSearch) {
+            authorIn.value(author);
+        }
+
+        query.select(book)
+                .distinct(true)
+                .where(cb.and(cb.equal(book.get("title"), title), authorIn));
+
+        return entityManager.createQuery(query)
+                .getSingleResult();
+    }
 }

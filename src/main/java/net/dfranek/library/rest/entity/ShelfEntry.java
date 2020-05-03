@@ -1,6 +1,7 @@
 package net.dfranek.library.rest.entity;
 
 import net.dfranek.library.rest.dto.ShelfBook;
+import net.dfranek.library.rest.dto.ShelfEntryDto;
 
 import javax.persistence.*;
 import java.util.Collection;
@@ -77,4 +78,14 @@ public class ShelfEntry implements EntityInterface<ShelfBook> {
 
         return shelfBook;
     }
+
+    public ShelfEntryDto toEntryDto() {
+        ShelfEntryDto dto = new ShelfEntryDto();
+        dto.setId(shelf.getId());
+        dto.setRow(row);
+        dto.setNumItems(shelf.getShelfEntries().size());
+
+        return dto;
+    }
+
 }

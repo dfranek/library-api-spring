@@ -1,10 +1,12 @@
 package net.dfranek.library.rest.entity;
 
+import net.dfranek.library.rest.dto.StateDto;
+
 import javax.persistence.*;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 @Entity
-public class State {
+public class State implements EntityInterface<StateDto> {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Integer id;
@@ -19,9 +21,9 @@ public class State {
     @JoinColumn(nullable = false)
     private User user;
 
-    private ZonedDateTime dateStarted;
+    private LocalDate dateStarted;
 
-    private ZonedDateTime dateCompleted;
+    private LocalDate dateCompleted;
 
     public Integer getId() {
         return id;
@@ -55,19 +57,28 @@ public class State {
         this.user = user;
     }
 
-    public ZonedDateTime getDateStarted() {
+    public LocalDate getDateStarted() {
         return dateStarted;
     }
 
-    public void setDateStarted(ZonedDateTime dateStarted) {
+    public void setDateStarted(LocalDate dateStarted) {
         this.dateStarted = dateStarted;
     }
 
-    public ZonedDateTime getDateCompleted() {
+    public LocalDate getDateCompleted() {
         return dateCompleted;
     }
 
-    public void setDateCompleted(ZonedDateTime dateCompleted) {
+    public void setDateCompleted(LocalDate dateCompleted) {
         this.dateCompleted = dateCompleted;
+    }
+
+    @Override
+    public StateDto toDto() {
+        StateDto stateDto = new StateDto();
+        stateDto.setDateCompleted(dateCompleted);
+        stateDto.setDateStarted(dateStarted);
+        stateDto.setState(state);
+        return stateDto;
     }
 }

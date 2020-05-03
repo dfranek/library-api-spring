@@ -9,10 +9,8 @@ import net.dfranek.library.rest.repository.TagRepository;
 import net.dfranek.library.rest.utils.SpringContext;
 import org.apache.commons.lang3.StringUtils;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -25,8 +23,8 @@ public class BasicBook implements DtoInterface<Book> {
     private List<String> authors = new ArrayList<>();
     private List<String> tags = new ArrayList<>();
     private int pages;
-    private ZonedDateTime datePublished;
-    private List<StateDto> states;
+    private LocalDate datePublished;
+    private List<StateDto> states = new ArrayList<>();
 
     public Integer getId() {
         return id;
@@ -84,11 +82,11 @@ public class BasicBook implements DtoInterface<Book> {
         this.pages = pages;
     }
 
-    public ZonedDateTime getDatePublished() {
+    public LocalDate getDatePublished() {
         return datePublished;
     }
 
-    public void setDatePublished(ZonedDateTime datePublished) {
+    public void setDatePublished(LocalDate datePublished) {
         this.datePublished = datePublished;
     }
 
@@ -125,6 +123,7 @@ public class BasicBook implements DtoInterface<Book> {
                             .orElseGet(() -> {
                                 Tag tagObj = new Tag();
                                 tagObj.setName(tag);
+                                tagObj.setLibraries(new HashSet<>());
                                 return tagObj;
                             })
                     )
@@ -147,11 +146,39 @@ public class BasicBook implements DtoInterface<Book> {
 
         }
 
+        if(states != null) {
+            book.setStates(states.stream()
+                    .map(StateDto::toEntity)
+                    .collect(Collectors.toSet())
+            );
+        }
+
         if(image != null) {
             book.setImage(image.toEntity());
         }
 
 
         return book;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BasicBook basicBook = (BasicBook) o;
+        return pages == basicBook.pages &&
+                Objects.equals(id, basicBook.id) &&
+                Objects.equals(title, basicBook.title) &&
+                Objects.equals(tagline, basicBook.tagline) &&
+                Objects.equals(image, basicBook.image) &&
+                Objects.equals(authors, basicBook.authors) &&
+                Objects.equals(tags, basicBook.tags) &&
+                Objects.equals(datePublished, basicBook.datePublished) &&
+                Objects.equals(states, basicBook.states);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, tagline, image, authors, tags, pages, datePublished, states);
     }
 }

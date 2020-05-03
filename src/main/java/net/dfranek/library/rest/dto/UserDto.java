@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import net.dfranek.library.rest.entity.User;
 
+import java.util.Objects;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDto implements DtoInterface<User> {
 
@@ -81,5 +83,23 @@ public class UserDto implements DtoInterface<User> {
         }
 
         return user;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserDto userDto = (UserDto) o;
+        return Objects.equals(id, userDto.id) &&
+                Objects.equals(email, userDto.email) &&
+                Objects.equals(password, userDto.password) &&
+                Objects.equals(firstName, userDto.firstName) &&
+                Objects.equals(lastName, userDto.lastName) &&
+                Objects.equals(avatar, userDto.avatar);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, email, password, firstName, lastName, avatar);
     }
 }
