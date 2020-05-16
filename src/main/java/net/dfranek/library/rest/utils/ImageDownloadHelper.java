@@ -1,7 +1,6 @@
 package net.dfranek.library.rest.utils;
 
 import net.dfranek.library.rest.dto.FileObject;
-import net.dfranek.library.rest.jwt.JwtAuthenticationFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +13,7 @@ import java.util.Base64;
 
 public final class ImageDownloadHelper {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ImageDownloadHelper.class);
 
     public static FileObject downloadImage(final String url) {
         try {
