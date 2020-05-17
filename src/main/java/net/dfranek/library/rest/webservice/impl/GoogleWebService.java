@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 @Component
 public class GoogleWebService implements BookWebService {
 
-    private static final String API_URL = "https://www.googleapis.com/books/v1/";
-
     private static final Logger LOG = LoggerFactory.getLogger(GoogleWebService.class);
 
     @Override

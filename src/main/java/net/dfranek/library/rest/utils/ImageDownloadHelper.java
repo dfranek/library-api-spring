@@ -27,12 +27,14 @@ public final class ImageDownloadHelper {
                 buffer.write(data, 0, nRead);
             }
 
+            final byte[] bytes = buffer.toByteArray();
+
             buffer.flush();
             FileObject file = new FileObject();
-            file.setContents(Base64.getEncoder().encodeToString(buffer.toByteArray()));
+            file.setContents(Base64.getEncoder().encodeToString(bytes));
             file.setFileName("image.jpg");
-            file.setMimeType(urlConnection.getContentType());
-            file.setFileSize(urlConnection.getContentLength());
+            file.setMimeType(urlConnection.getContentType().indexOf(';') == -1 ? urlConnection.getContentType() : urlConnection.getContentType().substring(0, urlConnection.getContentType().indexOf(';')));
+            file.setFileSize(urlConnection.getContentLength() == -1 ? bytes.length : urlConnection.getContentLength());
 
             return file;
         } catch (IOException e) {

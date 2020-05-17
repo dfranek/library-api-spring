@@ -7,6 +7,8 @@ import net.dfranek.library.rest.webservice.BookWebService;
 import net.dfranek.library.sru.SearchRetrieveResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.marc4j.MarcReader;
 import org.marc4j.MarcXmlReader;
 import org.marc4j.marc.DataField;
@@ -25,10 +27,10 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -40,9 +42,10 @@ public class DnbWebService implements BookWebService {
 
     private static final String BASE_URL = "https://services.dnb.de/sru/dnb";
 
+    private static final String IMAGE_BASE_URL = "https://portal.dnb.de/opac/mvb/cover.htm?isbn=";
+
     @Autowired
     private DnbConfig dnbConfig;
-
 
     @Override
     public List<DetailBook> getBookByIsbn(String isbn) {
@@ -84,8 +87,7 @@ public class DnbWebService implements BookWebService {
                         InputStream targetStream = new ByteArrayInputStream(record.getRecordData().getBytes());
                         MarcReader reader = new MarcXmlReader(targetStream);
                         while (reader.hasNext()) {
-                            Optional.ofNullable(createDetailBookFromRecord(reader.next()))
-                                .ifPresent(books::add);
+                            books.add(createDetailBookFromRecord(reader.next()));
                         }
                     });
 
@@ -100,12 +102,31 @@ public class DnbWebService implements BookWebService {
     private DetailBook createDetailBookFromRecord(Record record) {
         final DetailBook book = new DetailBook();
         book.setTitle(getFieldData(record, "245", "a"));
-        Optional.ofNullable(parsePages(getFieldData(record, "300", "a")))
+        Optional.ofNullable(getFieldData(record, "300", "a"))
+                .map(this::parsePages)
                 .ifPresent(book::setPages);
         book.setPublisher(getFieldData(record, "264", "b"));
         book.setPlaceOfPublication(getFieldData(record, "264", "a"));
         Optional.ofNullable(getFieldData(record, "245", "bnp"))
                 .ifPresent(book::setTagline);
+
+        Optional.ofNullable(getFieldData(record, "020", "9"))
+                .map(isbn -> IMAGE_BASE_URL + isbn)
+                .map(ImageDownloadHelper::downloadImage)
+                .ifPresent(book::setImage);
+
+        Optional.ofNullable(getFieldData(record, "264", "c"))
+                .map(this::parseDate)
+                .ifPresent(book::setDatePublished);
+
+        Optional.ofNullable(getFieldData(record, "100", "a"))
+                .map(this::parseAuthor)
+            .ifPresent(author -> book.getAuthors().add(author));
+
+        Optional.ofNullable(getFieldData(record, "856", "u"))
+                .map(this::downloadDescription)
+                .map(String::trim)
+                .ifPresent(book::setDescription);
 
         getFieldDataAsList(record, "020", "a")
                 .forEach(isbn -> {
@@ -116,7 +137,20 @@ public class DnbWebService implements BookWebService {
                     }
                 });
 
-        return null;
+        return book;
+    }
+
+    private LocalDate parseDate(final String value) {
+        try {
+            if (value.length() == 4) {
+                return LocalDate.parse("01. 01. " + value, DateTimeFormatter.ofPattern("dd. MM. yyyy"));
+            } else {
+                return LocalDate.parse("01. " + value, DateTimeFormatter.ofPattern("dd. MMMM yyyy", new Locale("de", "DE")));
+            }
+        } catch (DateTimeException e ) {
+            LOG.info("could not parse date", e);
+            return null;
+        }
     }
 
     private Integer parsePages(final String value) {
@@ -126,7 +160,8 @@ public class DnbWebService implements BookWebService {
             final String pagesAsString = matcher.group(0);
             try {
                 return Integer.parseInt(pagesAsString);
-            } catch (NumberFormatException exception){
+            } catch (NumberFormatException e){
+                LOG.info("could not parse pages", e);
                 return null;
             }
         }
@@ -144,6 +179,22 @@ public class DnbWebService implements BookWebService {
                 .map(field -> (DataField) field)
                 .map(field -> field.getSubfieldsAsString(subFieldSpecifier))
                 .collect(Collectors.toList());
+    }
+
+
+    private String parseAuthor(String authorString) {
+        final String[] authorParts = authorString.split(",");
+        return (authorParts[1] + " " + authorParts[0]).trim();
+    }
+
+    private String downloadDescription(String url) {
+        try {
+            final Document document = Jsoup.connect(url).get();
+            return document.select("p").text();
+        } catch (IOException e) {
+            LOG.info("could not download description", e);
+            return null;
+        }
     }
 
 }

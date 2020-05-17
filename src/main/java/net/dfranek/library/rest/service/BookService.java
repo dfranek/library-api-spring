@@ -32,6 +32,7 @@ public class BookService {
                     book.getTags().addAll(newBook.getTags());
                     book.getStates().addAll(newBook.getStates());
                 });
+                break;
             }
 
         }

@@ -89,7 +89,7 @@ public class FileObject implements DtoInterface<DatabaseFile> {
     public void save(String directory) throws IOException {
         byte[] contentAsBytes = Base64.getDecoder().decode(contents);
         if(endings.containsKey(mimeType)) {
-            Path filePath = Files.createTempFile(Paths.get(directory), "avatar_", endings.get(mimeType));
+            Path filePath = Files.createTempFile(Paths.get(directory), "image_", endings.get(mimeType));
             Files.write(filePath, contentAsBytes);
 
             storagePath = filePath.toAbsolutePath().toString();

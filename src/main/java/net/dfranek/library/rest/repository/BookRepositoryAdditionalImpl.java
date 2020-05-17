@@ -81,6 +81,6 @@ public class BookRepositoryAdditionalImpl implements BookRepositoryAdditional {
                 .where(cb.and(cb.equal(book.get("title"), title), authorIn));
 
         return entityManager.createQuery(query)
-                .getSingleResult();
+                .getResultList().stream().findFirst().orElse(null);
     }
 }
