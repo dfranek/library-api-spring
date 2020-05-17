@@ -177,4 +177,40 @@ public class BookController {
         return new ResponseEntity<>(savedBook, HttpStatus.CREATED);
     }
 
+
+    @GetMapping("{bookId}")
+    public @ResponseBody
+    ResponseEntity<?> getBook(@RequestHeader(SecurityHelper.TOKEN_HEADER) String authHeader, @PathVariable int bookId) {
+        User user = userRepository.findByEmail(securityHelper.getUserNameFromAuthHeader(authHeader));
+        if(user == null) {
+            return new ResponseEntity<>(new InformationalResponse(HttpStatus.UNAUTHORIZED.value(), "no user logged in"), HttpStatus.UNAUTHORIZED);
+        }
+
+        final Optional<Book> bookOptional = bookRepository.findById(bookId);
+        if(!bookOptional.isPresent()) {
+            return new ResponseEntity<>(new InformationalResponse(HttpStatus.NOT_FOUND.value(), "no book found"), HttpStatus.NOT_FOUND);
+        } else {
+            Book book = bookOptional.get();
+            return new ResponseEntity<>(book.toDto(), HttpStatus.OK);
+        }
+    }
+
+    @DeleteMapping("{bookId}")
+    public @ResponseBody
+    ResponseEntity<?> deleteLibrary(@RequestHeader(SecurityHelper.TOKEN_HEADER) String authHeader, @PathVariable int bookId) {
+        User user = userRepository.findByEmail(securityHelper.getUserNameFromAuthHeader(authHeader));
+        if(user == null) {
+            return new ResponseEntity<>(new InformationalResponse(HttpStatus.UNAUTHORIZED.value(), "no user logged in"), HttpStatus.UNAUTHORIZED);
+        }
+
+        Optional<Book> bookOptional = bookRepository.findById(bookId);
+        if(!bookOptional.isPresent()) {
+            return new ResponseEntity<>(new InformationalResponse(HttpStatus.NOT_FOUND.value(), "no book found"), HttpStatus.NOT_FOUND);
+        } else {
+            Book book = bookOptional.get();
+            bookRepository.delete(book);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+    }
+
 }
