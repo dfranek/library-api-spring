@@ -21,3 +21,9 @@ steps:
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     goals: 'clean install'
     options: '-P web'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: target/library-api-1.0.0-SNAPSHOT.jar
+    ArtifactName: 'library-api'
+    publishLocation: 'Container'
