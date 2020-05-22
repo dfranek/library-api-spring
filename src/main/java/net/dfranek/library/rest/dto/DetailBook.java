@@ -107,10 +107,6 @@ public class DetailBook extends BasicBook implements BookWithLocation {
             book.setPublisher(placeOfPublication);
         }
 
-        if(!shelves.isEmpty()) {
-            book.setShelfEntries(shelves.stream().map(ShelfEntryDto::toEntity).collect(Collectors.toSet()));
-        }
-
         return book;
     }
 

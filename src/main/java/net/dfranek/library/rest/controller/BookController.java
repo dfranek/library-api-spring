@@ -52,6 +52,9 @@ public class BookController {
     @Autowired
     private StateRepository stateRepository;
 
+    @Autowired
+    private AuthorRepository authorRepository;
+
     @PostMapping(params = "type=AUTOMATIC")
     public @ResponseBody
     ResponseEntity<?> createBook(@RequestBody NewBook bookToCreate, @RequestHeader(SecurityHelper.TOKEN_HEADER) String authHeader) {
@@ -121,31 +124,7 @@ public class BookController {
             book.updateFromDto(bookToCreate);
         }
 
-        book.getTags()
-                .stream()
-                .filter(tag -> tag.getId() == null)
-                .forEach(tag -> tagRepository.save(tag));
-
-        Book finalBook = book;
-        book.getStates()
-                .stream()
-                .filter(state -> state.getId() == null)
-                .forEach(state -> {
-                    state.setUser(user);
-                    state.setBook(finalBook);
-                    stateRepository.save(state);
-                });
-
-        bookRepository.save(book);
-
-        bookToCreate.getShelves()
-                .stream()
-                .map(ShelfEntryDto::toEntity)
-                .forEach(shelfEntry -> {
-                    shelfEntry.setBook(finalBook);
-                    shelfEntryRepository.save(shelfEntry);
-                    finalBook.getShelfEntries().add(shelfEntry);
-                });
+        doDbSave(book, bookToCreate, user);
 
         return book.toDto();
     }
@@ -181,11 +160,6 @@ public class BookController {
     @GetMapping("{bookId}")
     public @ResponseBody
     ResponseEntity<?> getBook(@RequestHeader(SecurityHelper.TOKEN_HEADER) String authHeader, @PathVariable int bookId) {
-        User user = userRepository.findByEmail(securityHelper.getUserNameFromAuthHeader(authHeader));
-        if(user == null) {
-            return new ResponseEntity<>(new InformationalResponse(HttpStatus.UNAUTHORIZED.value(), "no user logged in"), HttpStatus.UNAUTHORIZED);
-        }
-
         final Optional<Book> bookOptional = bookRepository.findById(bookId);
         if(!bookOptional.isPresent()) {
             return new ResponseEntity<>(new InformationalResponse(HttpStatus.NOT_FOUND.value(), "no book found"), HttpStatus.NOT_FOUND);
@@ -197,12 +171,7 @@ public class BookController {
 
     @DeleteMapping("{bookId}")
     public @ResponseBody
-    ResponseEntity<?> deleteLibrary(@RequestHeader(SecurityHelper.TOKEN_HEADER) String authHeader, @PathVariable int bookId) {
-        User user = userRepository.findByEmail(securityHelper.getUserNameFromAuthHeader(authHeader));
-        if(user == null) {
-            return new ResponseEntity<>(new InformationalResponse(HttpStatus.UNAUTHORIZED.value(), "no user logged in"), HttpStatus.UNAUTHORIZED);
-        }
-
+    ResponseEntity<?> deleteBook(@RequestHeader(SecurityHelper.TOKEN_HEADER) String authHeader, @PathVariable int bookId) {
         Optional<Book> bookOptional = bookRepository.findById(bookId);
         if(!bookOptional.isPresent()) {
             return new ResponseEntity<>(new InformationalResponse(HttpStatus.NOT_FOUND.value(), "no book found"), HttpStatus.NOT_FOUND);
@@ -211,6 +180,63 @@ public class BookController {
             bookRepository.delete(book);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+    }
+
+    @PutMapping("{bookId}")
+    public @ResponseBody
+    ResponseEntity<?> editBook(@RequestHeader(SecurityHelper.TOKEN_HEADER) String authHeader, @PathVariable int bookId, @RequestBody DetailBook bookToUpdate) {
+        User user = userRepository.findByEmail(securityHelper.getUserNameFromAuthHeader(authHeader));
+        Optional<Book> bookOptional = bookRepository.findById(bookId);
+        if(!bookOptional.isPresent()) {
+            return new ResponseEntity<>(new InformationalResponse(HttpStatus.NOT_FOUND.value(), "no book found"), HttpStatus.NOT_FOUND);
+        } else {
+            Book book = bookOptional.get();
+
+            book.updateFromDto(bookToUpdate);
+            doDbSave(book, bookToUpdate, user);
+
+            return new ResponseEntity<>(book.toDto(), HttpStatus.CREATED);
+        }
+    }
+
+    private void doDbSave(final Book book, final DetailBook bookToSave, final User user) {
+        book.getTags()
+                .stream()
+                .filter(tag -> tag.getId() == null)
+                .forEach(tag -> tagRepository.save(tag));
+
+        book.getStates()
+                .stream()
+                .filter(state -> state.getId() == null)
+                .forEach(state -> {
+                    state.setUser(user);
+                    state.setBook(book);
+                    stateRepository.save(state);
+                });
+
+        book.getAuthors()
+                .stream()
+                .filter(author -> author.getId() == null)
+                .forEach(author -> authorRepository.save(author));
+
+        bookRepository.save(book);
+
+        bookToSave.getShelves()
+                .stream()
+                .map(ShelfEntryDto::toEntity)
+                .forEach(shelfEntry -> {
+                    shelfEntry.setBook(book);
+                    shelfEntryRepository.save(shelfEntry);
+                    book.getShelfEntries().add(shelfEntry);
+                });
+        book.getAuthors()
+                .stream()
+                .filter(author -> author.getId() == null)
+                .forEach(author -> {
+                    author.getBooks().add(book);
+                    book.getAuthors().add(author);
+                    authorRepository.save(author);
+                });
     }
 
 }

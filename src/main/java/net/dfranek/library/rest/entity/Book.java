@@ -6,10 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,7 +35,7 @@ public class Book implements EntityInterface<DetailBook> {
     private String tagline;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE)
-    private Set<State> states;
+    private Set<State> states = new HashSet<>();
 
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
@@ -46,7 +43,7 @@ public class Book implements EntityInterface<DetailBook> {
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
-    private Set<Tag> tags;
+    private Set<Tag> tags = new HashSet<>();
 
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
@@ -54,10 +51,10 @@ public class Book implements EntityInterface<DetailBook> {
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "author_id")
     )
-    private Set<Author> authors;
+    private Set<Author> authors = new HashSet<>();
 
     @OneToMany(mappedBy = "book", orphanRemoval = true, cascade = CascadeType.PERSIST)
-    private Set<ShelfEntry> shelfEntries;
+    private Set<ShelfEntry> shelfEntries = new HashSet<>();
 
     @ManyToOne(cascade = CascadeType.PERSIST)
     private DatabaseFile image;

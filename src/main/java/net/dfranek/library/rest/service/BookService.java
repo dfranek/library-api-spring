@@ -20,7 +20,7 @@ public class BookService {
         List<DetailBook> books = Collections.emptyList();
         for (BookWebService service : webServices) {
             if (StringUtils.isNotBlank(newBook.getIsbn13()) || StringUtils.isNotBlank(newBook.getIsbn10())) {
-                books = service.getBookByIsbn(newBook.getIsbn13().trim().isEmpty() ? newBook.getIsbn10() : newBook.getIsbn13());
+                books = service.getBookByIsbn(StringUtils.isBlank(newBook.getIsbn13()) ? newBook.getIsbn10() : newBook.getIsbn13());
             } else if(StringUtils.isNotBlank(newBook.getTitle())) {
                 books = service.getBookByTitleAndAuthor(newBook.getTitle(), newBook.getAuthor());
             }
