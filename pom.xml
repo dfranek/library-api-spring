@@ -128,4 +128,19 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>web</id>
+            <properties>
+                <start-class>net.dfranek.library.rest.Application</start-class>
+            </properties>
+        </profile>
+        <profile>
+            <id>cli</id>
+            <properties>
+                <start-class>net.dfranek.library.cli.CliApplication</start-class>
+            </properties>
+        </profile>
+    </profiles>
+
 </project>
