@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Controller
+@CrossOrigin
 @RequestMapping(path = "/book")
 public class BookController {
 

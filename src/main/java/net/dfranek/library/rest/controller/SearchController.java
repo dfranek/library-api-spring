@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
+@CrossOrigin
 @RequestMapping(path = "/search")
 public class SearchController {
 

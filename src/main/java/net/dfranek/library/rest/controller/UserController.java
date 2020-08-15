@@ -19,10 +19,11 @@ import java.io.IOException;
 import java.util.Optional;
 
 @Controller
+@CrossOrigin
 @RequestMapping(path = "/user")
 public class UserController {
 
-    private Logger LOG = LoggerFactory.getLogger(UserController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
     private UserRepository userRepository;

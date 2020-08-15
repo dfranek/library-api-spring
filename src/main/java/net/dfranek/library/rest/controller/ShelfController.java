@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Controller
+@CrossOrigin
 @RequestMapping(path = "/library/{libraryId}/shelves")
 public class ShelfController {
 
